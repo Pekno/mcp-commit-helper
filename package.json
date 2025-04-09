@@ -1,6 +1,6 @@
 { 
-  "name": "mcp-commit-helper", 
-  "version": "1.0.0", 
+  "name": "@pekno/mcp-commit-helper", 
+  "version": "0.0.1", 
   "description": "MCP server for generating Git commit messages using LLMs", 
   "main": "dist/index.js", 
   "type": "module", 
@@ -12,10 +12,10 @@
     "dist/" 
   ], 
   "scripts": { 
-    "build": "tsc", 
+    "build": "npx tsc --build", 
     "start": "node dist/index.js", 
-    "build:cli": "node dist/cli.js", 
-    "prepare": "npm run build && npm run build:cli" 
+    "check-exports": "attw --pack . --ignore-rules=cjs-resolves-to-esm",
+    "ci": "npm run build && npm run check-exports"
   }, 
   "repository": { 
     "type": "git", 
