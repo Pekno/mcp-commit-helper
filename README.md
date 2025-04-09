@@ -1,8 +1,12 @@
-# MCP Commit Helper
+# <img src="./assets/logo.png" width="75" height="75">  MCP Commit Helper
 
 <div align="center">
-  <img src="https://github.com/pekno/mcp-commit-helper/raw/main/assets/commit-helper-logo.png" alt="MCP Commit Helper" width="400"/>
-  <p><em>Generate intelligent Git commit messages using the Model Context Protocol</em></p>
+  
+![GitHub License](https://img.shields.io/badge/license-MIT-blue.svg)
+![TypeScript](https://img.shields.io/badge/language-TypeScript-blue)
+[![npm version](https://img.shields.io/npm/v/@pekno/mcp-commit-helper.svg)](https://www.npmjs.com/package/@pekno/mcp-commit-helper)
+[![npm download](https://img.shields.io/npm/d18m/%40pekno%2Fmcp-commit-helper)](https://www.npmjs.com/package/@pekno/mcp-commit-helper)
+
 </div>
 
 An MCP server that helps you write better Git commit messages by leveraging LLMs like Claude. It analyzes your Git diff and suggests appropriate, conventional commit messages.
