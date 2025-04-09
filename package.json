@@ -2,13 +2,11 @@
   "name": "@pekno/mcp-commit-helper", 
   "version": "0.0.1", 
   "description": "MCP server for generating Git commit messages using LLMs", 
-  "main": "dist/index.js", 
   "type": "module", 
   "bin": { 
-    "mcp-commit-helper": "bin/cli.js" 
+    "mcp-commit-helper": "dist/cli.js" 
   }, 
   "files": [ 
-    "bin/", 
     "dist/" 
   ], 
   "scripts": { 
