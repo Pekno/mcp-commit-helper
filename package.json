@@ -1,0 +1,50 @@
+{ 
+  "name": "mcp-commit-helper", 
+  "version": "1.0.0", 
+  "description": "MCP server for generating Git commit messages using LLMs", 
+  "main": "dist/index.js", 
+  "type": "module", 
+  "bin": { 
+    "mcp-commit-helper": "bin/cli.js" 
+  }, 
+  "files": [ 
+    "bin/", 
+    "dist/" 
+  ], 
+  "scripts": { 
+    "build": "tsc", 
+    "start": "node dist/index.js", 
+    "build:cli": "node dist/cli.js", 
+    "prepare": "npm run build && npm run build:cli" 
+  }, 
+  "repository": { 
+    "type": "git", 
+    "url": "git+https://github.com/pekno/mcp-commit-helper.git" 
+  }, 
+  "homepage": "https://github.com/pekno/mcp-commit-helper#readme", 
+  "bugs": { 
+    "url": "https://github.com/pekno/mcp-commit-helper/issues" 
+  }, 
+  "keywords": [ 
+    "mcp", 
+    "model-context-protocol", 
+    "git", 
+    "commit", 
+    "ai", 
+    "claude", 
+    "llm" 
+  ], 
+  "author": "pekno", 
+  "license": "MIT", 
+  "dependencies": { 
+    "@modelcontextprotocol/sdk": "latest", 
+    "zod": "^3.22.4" 
+  }, 
+  "devDependencies": { 
+    "@types/node": "^20.10.0", 
+    "typescript": "^5.3.2" 
+  }, 
+  "engines": { 
+    "node": ">=16.0.0" 
+  } 
+} 
