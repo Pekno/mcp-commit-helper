@@ -35,8 +35,7 @@ You can also set environment variables directly in your MCP configuration:
       "command": "npx",
       "args": ["-y", "mcp-commit-helper"],
       "env": {
-        "MCP_COMMIT_PROMPT": "Please analyze these changes and provide a commit message:\\n\\n{diff}",
-        "MCP_CONVENTIONAL_COMMIT_PROMPT": "Write a conventional commit message for these changes:\\n\\n{diff}"
+        "MCP_COMMIT_PROMPT": "Write a conventional commit message for these changes:\\n\\n{diff}"
       }
     }
   }
@@ -75,25 +74,15 @@ When talking to an LLM like Claude with MCP support, you can use commands like:
 
 ### Environment Variables (Optional)
 
-The MCP Commit Helper works perfectly out of the box, but you can optionally customize the commit message prompts by setting environment variables:
+The MCP Commit Helper works perfectly out of the box, but you can optionally customize the commit message prompt by setting environment variable:
 
-- `MCP_COMMIT_PROMPT` (optional): Customize the prompt for generating commit messages
-  
-  Default: 
-  ```
-  Based on the following changes {scope}please suggest a commit message:
-
-  {diff}
-  ```
-
-- `MCP_CONVENTIONAL_COMMIT_PROMPT` (optional): Customize the conventional commit prompt
+- `MCP_COMMIT_PROMPT` (optional): Customize the conventional commit prompt
   
   Default:
   ```
   Based on the following git diff, please write a commit message following the Conventional Commits format (type(scope): description).
 
   Types include: feat, fix, docs, style, refactor, test, chore, etc.
-  {scope_instruction}
 
   Focus on being concise but descriptive, using imperative mood.
   Include a brief description of the changes after the header if helpful.
@@ -105,8 +94,7 @@ The MCP Commit Helper works perfectly out of the box, but you can optionally cus
 
 When customizing prompts, use these template variables:
 - `{diff}`: Will be replaced with the actual Git diff
-- `{scope}`: Will be replaced with scope info if provided (for regular commits)
-- `{scope_instruction}`: Will be replaced with scope instructions (for conventional commits)
+- `{scope}`: Will be replaced with scope info if provided
 
 You might want to customize these prompts to:
 - Follow your team or organization's commit message conventions

@@ -4,7 +4,12 @@ on:
   push:
     tags:
       - "v*" # Trigger on tags starting with "v"
-  workflow_dispatch: # Allows manual triggering
+  workflow_dispatch:
+    inputs:
+      releaseChannel:
+        description: 'Release channel (e.g., "latest" for stable or "beta" for beta releases)'
+        required: false
+        default: "latest"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -34,6 +39,8 @@ jobs:
       - name: Run CI
         run: npm run ci
 
-      - run: npm publish --access public
+      # Publish the package to npm with the chosen tag (beta or latest)
+      - name: Publish Package to npm
+        run: npm publish --access public --tag ${{ github.event.inputs.releaseChannel }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
