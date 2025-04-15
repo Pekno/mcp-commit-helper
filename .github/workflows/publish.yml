@@ -43,9 +43,7 @@ jobs:
       - name: Bump beta version
         if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.releaseChannel == 'beta' }}
         run: |
-          npm version prerelease --preid=beta
-          # Optionally, push the new commit and tag back to your repo:
-          git push --follow-tags
+          npm version prerelease --no-git-tag-version --preid=beta
 
       # Publish the package to npm with the chosen tag
       - name: Publish Package to npm
