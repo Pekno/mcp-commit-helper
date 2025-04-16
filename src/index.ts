@@ -10,6 +10,7 @@ import {
   checkGitRepo,
   getCommitPrompt,
   getGitDiff,
+  validateConventionalCommitHeader, // Import the new validator
 } from "./utils.js";
 import pkg from "./../package.json" with { type: "json" };
 
@@ -160,8 +161,10 @@ export function createServer(): McpServer {
   );
 
   // --- Tool: Generate Commit Message Prompt (Generic) ---
+  // This tool now just generates the prompt FOR the LLM.
+  // The LLM will then call create-commit with the generated message.
   server.tool(
-    "generate-commit-message",
+    "generate-commit-prompt", // Renamed for clarity
     // Input schema: optional scope string
     { scope: z.string().optional() },
     // Handler function
@@ -189,7 +192,7 @@ export function createServer(): McpServer {
             content: [
               {
                 type: "text",
-                text: "No changes detected to create a commit message for.",
+                text: "No changes detected to generate a commit message prompt for.",
               },
             ],
             // isError: false // Not technically an error
@@ -206,18 +209,22 @@ export function createServer(): McpServer {
         // Get the appropriate commit prompt template (generic one)
         const promptTemplate = getCommitPrompt();
 
+        // Determine the scope instruction based on the provided scope
+        const scopeInstruction = scope
+          ? `Use the provided scope "${scope}".`
+          : `Determine an appropriate scope based on the changes if applicable, otherwise omit the scope.`;
+
         // Format the prompt with the diff and scope information
-        const scopeInfo = scope ? `with scope "${scope}" ` : ""; // Add scope context if provided
         const prompt = promptTemplate
           .replace("{diff}", diff)
-          .replace("{scope}", scopeInfo);
+          .replace("{scope_instruction}", scopeInstruction); // Use the correct placeholder
 
         // Return the formatted prompt to be sent to the LLM
         return {
           content: [
             {
               type: "text",
-              text: prompt,
+              text: prompt, // This is the prompt for the LLM
             },
           ],
         };
@@ -240,13 +247,14 @@ export function createServer(): McpServer {
   // --- Tool: Create Git Commit ---
   server.tool(
     "create-commit",
-    // Input schema: requires non-empty message, optional addAll flag
+    // Input schema: requires non-empty message, optional addAll, optional validate
     {
       message: z.string().min(1, "Commit message cannot be empty"),
       addAll: z.boolean().optional().default(false), // Default addAll to false
+      validate: z.boolean().optional().default(true), // Default validate to true
     },
     // Handler function
-    async ({ message, addAll }) => {
+    async ({ message, addAll, validate }) => {
       // Check if project is initialized
       if (!state.projectPath || !state.isValidGitRepo) {
         return {
@@ -259,6 +267,23 @@ export function createServer(): McpServer {
           isError: true,
         };
       }
+
+      // --- Optional Validation Step ---
+      if (validate) {
+        const validationResult = validateConventionalCommitHeader(message);
+        if (!validationResult.isValid) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Error: Commit message validation failed. ${validationResult.error} Provided message:\n---\n${message}\n---\nTo commit anyway, use 'validate: false'.`,
+              },
+            ],
+            isError: true,
+          };
+        }
+      }
+      // --- End Validation Step ---
 
       try {
         // Stage all changes if addAll flag is true

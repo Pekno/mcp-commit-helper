@@ -4,6 +4,37 @@ import { promisify } from "util";
 // Promisify exec for cleaner async/await usage
 const execPromise = promisify(exec);
 
+// List of standard conventional commit types
+const CONVENTIONAL_COMMIT_TYPES = [
+  "feat",
+  "fix",
+  "build",
+  "chore",
+  "ci",
+  "docs",
+  "style",
+  "refactor",
+  "perf",
+  "test",
+];
+
+// Regex to validate the header of a Conventional Commit message
+// Breakdown:
+// ^ - Start of the string
+// (\w+) - Capture group 1: Type (one or more word characters)
+// (?:\(([\w.-]+)\))? - Optional non-capturing group for scope:
+//   \( - Literal opening parenthesis
+//   ([\w.-]+) - Capture group 2: Scope (one or more word chars, '.', or '-')
+//   \) - Literal closing parenthesis
+// (!)? - Optional capture group 3: Breaking change indicator '!'
+// : - Literal colon separator
+// \s - Required whitespace
+// (.+) - Capture group 4: Description (one or more characters)
+// $ - End of the string
+const CONVENTIONAL_COMMIT_HEADER_REGEX = new RegExp(
+  `^(\\w+)(?:\\(([\\w.-]+)\\))?(!)?:\\s(.+)$`
+);
+
 // Default conventional commit prompt template, now with more detail based on v1.0.0 spec
 const DEFAULT_COMMIT_PROMPT = `Please analyze the following git diff and generate a commit message strictly following the Conventional Commits specification (v1.0.0).
 
@@ -16,10 +47,9 @@ The commit message structure MUST be:
 
 Key elements:
 1.  **Header:**
-    * **<type>:** Must be one of the allowed types. Common types include:
-        * \`feat\`: Introduces a new feature (correlates with SEMVER MINOR).
-        * \`fix\`: Patches a bug (correlates with SEMVER PATCH).
-        * Other allowed types: \`build\`, \`chore\`, \`ci\`, \`docs\`, \`style\`, \`refactor\`, \`perf\`, \`test\`.
+    * **<type>:** Must be one of the allowed types: ${CONVENTIONAL_COMMIT_TYPES.join(
+      ", "
+    )}.
     * **[optional scope]:** A noun within parentheses describing the section of the codebase affected (e.g., \`(parser)\`, \`(api)\`, \`(ui)\`). {scope_instruction}
     * **<description>:** Concise summary of the change in imperative, present tense (e.g., "add", "fix", "change" not "added", "fixed", "changed"). Do NOT capitalize the first letter. Do NOT end with a period.
 
@@ -54,6 +84,58 @@ Now, analyze the following git diff and generate the complete commit message:
 // Get commit prompt template from environment variable or use default
 export function getCommitPrompt(): string {
   return process.env.MCP_COMMIT_PROMPT || DEFAULT_COMMIT_PROMPT;
+}
+
+/**
+ * Validates the header of a commit message against the Conventional Commits specification.
+ * @param message The full commit message string.
+ * @returns An object indicating if the header is valid and an optional error message.
+ */
+export function validateConventionalCommitHeader(message: string): {
+  isValid: boolean;
+  error?: string;
+} {
+  // Extract the first line (header)
+  const header = message.split("\n")[0].trim();
+
+  if (!header) {
+    return { isValid: false, error: "Commit message header cannot be empty." };
+  }
+
+  const match = header.match(CONVENTIONAL_COMMIT_HEADER_REGEX);
+
+  if (!match) {
+    return {
+      isValid: false,
+      error: `Invalid header format. Expected '<type>(<scope>): <description>' or '<type>!: <description>' or '<type>(<scope>)!: <description>'.`,
+    };
+  }
+
+  const [, type, , , description] = match; // Extract captured groups
+
+  // Check if the type is one of the allowed types
+  if (!CONVENTIONAL_COMMIT_TYPES.includes(type)) {
+    return {
+      isValid: false,
+      error: `Invalid type '${type}'. Must be one of: ${CONVENTIONAL_COMMIT_TYPES.join(
+        ", "
+      )}.`,
+    };
+  }
+
+  // Basic checks on the description (can be expanded)
+  if (!description) {
+    return { isValid: false, error: "Description cannot be empty." };
+  }
+  if (description.endsWith(".")) {
+    // Conventional commits spec recommends against ending period
+    // We'll make this a warning rather than invalidating for flexibility
+    // console.warn("Warning: Commit description ends with a period.");
+  }
+  // Could add check for imperative mood, but that's harder and better left to LLM/human
+
+  // If all checks pass
+  return { isValid: true };
 }
 
 // Helper function to check if a path is a valid Git repository
